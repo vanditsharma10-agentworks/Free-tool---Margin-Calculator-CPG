@@ -1,0 +1,47 @@
+# Local-dev stack for the CPG Margin Calculator.
+#   docker compose up          → Postgres (auto-seeded) + Next.js dev server
+#   docker compose up db        → just the database (run Next.js on the host)
+#
+# Postgres runs db/*.sql from /docker-entrypoint-initdb.d on first boot (empty
+# volume). To force a re-seed after editing seed data:  docker compose down -v
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: margin_calc_db
+    environment:
+      POSTGRES_USER: calc
+      POSTGRES_PASSWORD: calc
+      POSTGRES_DB: margin_calculator
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U calc -d margin_calculator"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: margin_calc_web
+    environment:
+      DATABASE_URL: postgresql://calc:calc@db:5432/margin_calculator
+      NODE_ENV: development
+    # Host 3100 to avoid clashing with the main Agentworks dev server on 3000.
+    ports:
+      - "3100:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  pgdata:
