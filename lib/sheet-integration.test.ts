@@ -158,6 +158,61 @@ describe("Club — no distributor layer, thin 12.5% margin", () => {
   });
 });
 
+describe("Selling direct — the distribution cost must NOT be treated as free", () => {
+  // Club-style: 12.5% retailer margin, no third-party distributor.
+  it("forward: a 15% self-distribution cost raises the shelf above the free-distribution case", () => {
+    // wholesale = 1.80 / (1 - 0.40) = 3.00
+    // your distribution cost 15% -> retailer cost = 3.00 * 1.15 = 3.45
+    // shelf = 3.45 / (1 - 0.125) = 3.942857... -> 3.94
+    const withCost = forwardWaterfall({
+      cogs: 1.8, manufacturerMarginPct: 40,
+      preset: { distributorMarkupPct: 15, retailerMarginPct: 12.5, hasDistributor: false },
+    });
+    expect(withCost.distributorSell).toBe(3.45);
+    expect(withCost.shelf).toBe(3.94);
+    // the middle band is your distribution cost = 3.45 - 3.00 = 0.45
+    expect(withCost.distributorCut).toBe(0.45);
+
+    // With the OLD behaviour (cost treated as 0) the shelf was only 3.43 —
+    // proving the cost is now accounted for rather than dropped.
+    const freeDist = forwardWaterfall({
+      cogs: 1.8, manufacturerMarginPct: 40,
+      preset: { distributorMarkupPct: 0, retailerMarginPct: 12.5, hasDistributor: false },
+    });
+    expect(freeDist.shelf).toBe(3.43);
+    expect(withCost.shelf).toBeGreaterThan(freeDist.shelf);
+  });
+
+  it("forward: segments still sum exactly to the shelf price", () => {
+    const r = forwardWaterfall({
+      cogs: 1.8, manufacturerMarginPct: 40,
+      preset: { distributorMarkupPct: 15, retailerMarginPct: 12.5, hasDistributor: false },
+    });
+    const sum = r.cogs + r.manufacturerProfit + r.distributorCut + r.retailerCut;
+    expect(Math.abs(sum - r.shelf)).toBeLessThan(0.0051);
+  });
+
+  it("reverse: adding a distribution cost LOWERS your implied wholesale (no more inflation)", () => {
+    // Same fixed shelf price, with vs without a self-distribution cost.
+    const shelf = 3.94;
+    const withCost = reverseWaterfall({
+      shelf, cogs: 1.8,
+      preset: { distributorMarkupPct: 15, retailerMarginPct: 12.5, hasDistributor: false },
+    });
+    const ignored = reverseWaterfall({
+      shelf, cogs: 1.8,
+      preset: { distributorMarkupPct: 0, retailerMarginPct: 12.5, hasDistributor: false },
+    });
+    // retailer cost = 3.94 * 0.875 = 3.4475
+    // with cost: wholesale = 3.4475 / 1.15 = 2.9978...  (~3.00)
+    // ignored:   wholesale = 3.4475            = 3.45
+    expect(withCost.wholesale).toBeCloseTo(3.0, 1);
+    expect(ignored.wholesale).toBeCloseTo(3.45, 1);
+    // Ignoring the cost overstates your take by ~15% — exactly the gap.
+    expect(withCost.wholesale).toBeLessThan(ignored.wholesale);
+  });
+});
+
 describe("Drug — 47.5% retailer margin squeezes the brand hardest", () => {
   it("a $4.99 shelf price at a $1.80 cost is tight or worse", () => {
     const preset = { distributorMarkupPct: 17.5, retailerMarginPct: 47.5, hasDistributor: true };

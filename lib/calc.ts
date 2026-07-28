@@ -21,11 +21,22 @@
  */
 
 export interface WaterfallPreset {
-  /** Distributor markup on its cost (your wholesale), whole-number percent. */
+  /**
+   * The MIDDLE-LAYER markup on your wholesale price, whole-number percent.
+   * It ALWAYS applies — it represents either a distributor's cut OR, when you
+   * sell direct, your own cost to get product to the store (warehousing,
+   * freight, delivery, broker). Both are mathematically identical: a markup
+   * sitting between your wholesale and the retailer's cost. Selling direct is
+   * not free, so callers pass the self-distribution cost here rather than 0.
+   */
   distributorMarkupPct: number;
   /** Retailer margin on shelf price, whole-number percent. */
   retailerMarginPct: number;
-  /** Direct/Club channels have no distributor layer. */
+  /**
+   * Labeling hint for the consumer only — the engine does NOT branch on this.
+   * true  = the middle markup is a distributor's cut.
+   * false = it's your own cost to sell direct (still applied, never zeroed).
+   */
   hasDistributor: boolean;
 }
 
@@ -156,7 +167,10 @@ export function forwardWaterfall(input: ForwardInput): WaterfallResult {
     throw new Error("Provide either a target margin or a wholesale price.");
   }
 
-  const distMarkupPct = preset.hasDistributor ? preset.distributorMarkupPct : 0;
+  // The middle markup always applies (distributor's cut OR your own cost to sell
+  // direct). It is never zeroed just because there's no distributor — selling
+  // direct has a real cost, which the caller passes in distributorMarkupPct.
+  const distMarkupPct = preset.distributorMarkupPct;
   const distributorSell = wholesale * (1 + distMarkupPct / 100);
 
   const retailerMarginPct = preset.retailerMarginPct;
@@ -214,7 +228,9 @@ export function reverseWaterfall(input: ReverseInput): ReverseResult {
   if (retailerMarginPct >= 100) throw new Error("Retailer margin must be below 100%.");
   const distributorSell = shelf * (1 - retailerMarginPct / 100); // = the retailer's cost
 
-  const distMarkupPct = preset.hasDistributor ? preset.distributorMarkupPct : 0;
+  // Always applied (distributor's cut OR your own cost to sell direct); never
+  // zeroed, so a direct sale no longer inflates your implied wholesale/margin.
+  const distMarkupPct = preset.distributorMarkupPct;
   const wholesale = distributorSell / (1 + distMarkupPct / 100);
 
   const manufacturerProfit = wholesale - cogs;

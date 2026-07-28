@@ -12,19 +12,20 @@ const money = (n: number) => `$${n.toFixed(2)}`;
  */
 export function Waterfall({
   result,
-  showDistributor,
+  middleLabel,
 }: {
   result: WaterfallResult;
-  showDistributor: boolean;
+  /** Label for the middle band — "Distributor" or "Your distribution cost". */
+  middleLabel: string;
 }) {
   const shelf = result.shelf > 0 ? result.shelf : 1;
 
+  // The middle band shows whenever there's a cut > 0 — whether that's a
+  // distributor's markup or your own cost to sell direct.
   const segs = [
     { key: "cogs", label: "Your cost", val: result.cogs, cls: "bg-fog" },
     { key: "profit", label: "Your profit", val: result.manufacturerProfit, cls: "bg-moss" },
-    ...(showDistributor
-      ? [{ key: "dist", label: "Distributor", val: result.distributorCut, cls: "bg-moss/55" }]
-      : []),
+    { key: "dist", label: middleLabel, val: result.distributorCut, cls: "bg-moss/55" },
     { key: "retail", label: "Store", val: result.retailerCut, cls: "bg-clay" },
   ].filter((s) => s.val > 0);
 

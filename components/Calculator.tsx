@@ -76,6 +76,9 @@ export function Calculator({ data }: { data: AppData }) {
   const [markupOv, setMarkupOv] = React.useState<number | null>(null);
   const [distOv, setDistOv] = React.useState<boolean | null>(null);
   const [storesOv, setStoresOv] = React.useState<number | null>(null);
+  // Your own cost to sell direct (%). No sheet data exists for this — it's the
+  // brand's own figure — so it starts at a clearly-labeled placeholder.
+  const [directPct, setDirectPct] = React.useState(15);
 
   const [entryOn, setEntryOn] = React.useState(true);
   const [skus, setSkus] = React.useState(1);
@@ -105,8 +108,14 @@ export function Calculator({ data }: { data: AppData }) {
   const markupPct = markupOv ?? rMarkup?.value ?? 0;
   const stores = storesOv ?? retailer?.stores ?? 25;
 
+  // The middle waterfall layer is either a distributor's markup or, when you
+  // sell direct, your own cost to get product to the store. Both feed the same
+  // slot — selling direct is not free, so we pass the self-distribution cost
+  // instead of zero.
+  const middleMarkup = hasDistributor ? markupPct : directPct;
+
   const preset: WaterfallPreset = {
-    distributorMarkupPct: markupPct,
+    distributorMarkupPct: middleMarkup,
     retailerMarginPct: marginPct,
     hasDistributor,
   };
@@ -274,22 +283,41 @@ export function Calculator({ data }: { data: AppData }) {
               </div>
 
               <div>
-                <NumberField
-                  label="Distributor markup"
-                  hint="what they add on top of your price"
-                  suffix="%"
-                  value={markupPct}
-                  step={0.5}
-                  min={0}
-                  disabled={!hasDistributor}
-                  onChange={setMarkupOv}
-                />
-                {hasDistributor && rMarkup ? (
-                  <ProvenanceNote provenance={rMarkup.provenance} note={rMarkup.note} />
+                {hasDistributor ? (
+                  <>
+                    <NumberField
+                      label="Distributor markup"
+                      hint="what they add on top of your price"
+                      suffix="%"
+                      value={markupPct}
+                      step={0.5}
+                      min={0}
+                      onChange={setMarkupOv}
+                    />
+                    {rMarkup && (
+                      <ProvenanceNote provenance={rMarkup.provenance} note={rMarkup.note} />
+                    )}
+                  </>
                 ) : (
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    No distributor — you sell straight to the store.
-                  </p>
+                  <>
+                    <NumberField
+                      label="Your cost to sell direct"
+                      hint="warehousing, freight, delivery, broker — your cost to reach the store"
+                      suffix="%"
+                      value={directPct}
+                      step={0.5}
+                      min={0}
+                      onChange={setDirectPct}
+                    />
+                    <p className="mt-1.5 flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
+                      <span className="mt-1 size-2 shrink-0 rounded-full border border-dashed border-warning" />
+                      <span>
+                        <span className="font-medium text-foreground">Your own figure — </span>
+                        selling direct isn&apos;t free. We have no data for this, so enter your real
+                        cost to get product to the store. Replaces the distributor&apos;s cut.
+                      </span>
+                    </p>
+                  </>
                 )}
                 <label className="mt-2.5 flex items-center gap-2 text-xs text-muted-foreground">
                   <Switch checked={hasDistributor} onCheckedChange={(v: boolean) => setDistOv(v)} />
@@ -403,13 +431,16 @@ export function Calculator({ data }: { data: AppData }) {
                   </div>
 
                   <div className="mt-5">
-                    <Waterfall result={result} showDistributor={hasDistributor} />
+                    <Waterfall
+                      result={result}
+                      middleLabel={hasDistributor ? "Distributor" : "Your distribution cost"}
+                    />
                   </div>
 
                   <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
                     You sell to <strong className="text-foreground">{middleman}</strong> at{" "}
                     <strong className="text-foreground tabular-nums">{money(result.wholesale)}</strong>.{" "}
-                    {hasDistributor && (
+                    {hasDistributor ? (
                       <>
                         They pass it on at{" "}
                         <strong className="text-foreground tabular-nums">
@@ -417,6 +448,20 @@ export function Calculator({ data }: { data: AppData }) {
                         </strong>
                         .{" "}
                       </>
+                    ) : (
+                      result.distributorCut > 0 && (
+                        <>
+                          Covering your own distribution adds{" "}
+                          <strong className="text-foreground tabular-nums">
+                            {money(result.distributorCut)}
+                          </strong>
+                          , so it lands at{" "}
+                          <strong className="text-foreground tabular-nums">
+                            {money(result.distributorSell)}
+                          </strong>
+                          .{" "}
+                        </>
+                      )
                     )}
                     <strong className="text-foreground">{whoLabel}</strong> shelves it at{" "}
                     <strong className="text-foreground tabular-nums">{money(result.shelf)}</strong>{" "}
