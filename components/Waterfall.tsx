@@ -22,11 +22,13 @@ export function Waterfall({
 
   // The middle band shows whenever there's a cut > 0 — whether that's a
   // distributor's markup or your own cost to sell direct.
+  // A monochrome indigo ramp (the site palette has no warm accent): cost is a
+  // neutral gray, then your money and each downstream cut steps lighter.
   const segs = [
-    { key: "cogs", label: "Your cost", val: result.cogs, cls: "bg-fog" },
-    { key: "profit", label: "Your profit", val: result.manufacturerProfit, cls: "bg-moss" },
-    { key: "dist", label: middleLabel, val: result.distributorCut, cls: "bg-moss/55" },
-    { key: "retail", label: "Store", val: result.retailerCut, cls: "bg-clay" },
+    { key: "cogs", label: "Your cost", val: result.cogs, cls: "bg-muted-foreground/40" },
+    { key: "profit", label: "Your profit", val: result.manufacturerProfit, cls: "bg-primary" },
+    { key: "dist", label: middleLabel, val: result.distributorCut, cls: "bg-brand-500" },
+    { key: "retail", label: "Store", val: result.retailerCut, cls: "bg-brand-400" },
   ].filter((s) => s.val > 0);
 
   return (

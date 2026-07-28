@@ -24,7 +24,7 @@ const cardVariants = cva(
         outline: "border-border bg-transparent",
         // Clickable cards (pipeline rows, candidate/venue/product pickers). Same resting
         // look as default, but signals affordance on hover instead of only on a child button.
-        interactive: "cursor-pointer bg-card ring-1 ring-foreground/10 hover:border-moss/40",
+        interactive: "cursor-pointer bg-card ring-1 ring-foreground/10 hover:border-primary/40",
       },
     },
     defaultVariants: {

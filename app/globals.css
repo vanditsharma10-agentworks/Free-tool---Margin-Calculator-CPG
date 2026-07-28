@@ -1,334 +1,377 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../styles/tokens.css";
 
-/* Tailwind 4 scans from this file's location; name the roots explicitly so
-   components/ and lib/ outside app/ are picked up. */
+/* Flat repo (no src/): tell Tailwind where to scan. In the site repo this is
+   implicit under src/; here app/, components/, lib/ and config/ live at root. */
 @source "../app";
 @source "../components";
 @source "../lib";
+@source "../config";
 
-/* SYNCED from packages/ui/tokens.css by sync-workbench.sh — do not edit here. */
-/* ==========================================================================
-   @agentworks/ui — the token layer.
-   
-   The ONE source of truth for the design system's colour, type, radius and base
-   rules. Import it from the consuming app's globals.css AFTER tailwindcss:
-   
-     @import "tailwindcss";
-     @import "tw-animate-css";
-     @import "shadcn/tailwind.css";   <- supplies the data-open/data-closed variants
-     @import "@agentworks/ui/tokens.css";
-     @source "./packages/ui/src";     <- REQUIRED: Tailwind can't see node_modules
-   
-   Deliberately does NOT import tailwindcss itself — that belongs to the app, and
-   importing it twice would emit the whole framework twice.
-   
-   App-specific rules do NOT live here (ColorBends, the devtools toggle). Those
-   stay in the app's own globals.css.
-   ========================================================================== */
+
+/* Single light theme: gate shadcn's `dark:` utilities to an explicit `.dark`
+ * ancestor (which we never render) so they don't react to the OS color scheme.
+ * All token *values* live in ../styles/tokens.css — this file only wires those
+ * tokens into Tailwind and applies base resets. */
 @custom-variant dark (&:is(.dark *));
 
-/* ==========================================================================
-   DESIGN TOKENS — brand palette (Layer 1) + shadcn semantic tokens (Layer 2,
-   derived). Ported from the reference app so re-theming never touches
-   component code.
-   ========================================================================== */
-
-:root {
-  /* ---- Layer 1: brand palette (light) ---- */
-  --ink: #1a1a2e; /* primary text — deep indigo-black */
-  --paper: #f7f7fb; /* app background — cool off-white */
-  --surface: #ffffff; /* cards / raised surfaces */
-  /* Brand indigo. The design-language repo documents #5b50f0; the confirmed
-     brand hex is #5e50ee, so that wins here. (Token name "moss" kept for
-     historical reasons — it is indigo, not green.) */
-  --moss: #5e50ee; /* primary actions — the brand indigo (name kept) */
-  --moss-contrast: #ffffff; /* text on the primary */
-  --clay: #c96f4a; /* warm accent */
-  --fog: #8b8b9c; /* secondary text, borders (cool gray) */
-  --signal: #16a34a; /* success */
-  --signal-contrast: #ffffff;
-  --danger: #b3402f; /* errors */
-  --danger-contrast: #ffffff;
-  --warning: #b06f16; /* warnings — the token the app lacked; 84 raw amber-* hits stood in for it */
-  --warning-contrast: #ffffff;
-  --info: #0b6fa4; /* neutral notices — replaces the raw sky-* used for "opened"/info states */
-  --info-contrast: #ffffff;
-  --brand-panel: #1b1740; /* fixed deep indigo for the auth brand panel (same in light + dark) */
-  /* Text/icons sitting on a photo scrim (CardMedia overlays). Deliberately NOT redefined
-     in .dark: the scrim is always dark, so this stays near-white in BOTH themes. It's a
-     real token rather than a raw text-white so the intent is legible and greppable —
-     the app currently spells this `text-white` in 47 places. */
-  --on-media: #ffffff;
-  --on-media-muted: #d6d6db;
-  /* The backdrop behind a dialog/sheet. Like --on-media, deliberately NOT redefined in
-     .dark: a scrim is a shadow, not a foreground. It must be dark in BOTH themes. This
-     replaced `bg-foreground/40`, which tracked the theme and therefore rendered a WHITE
-     backdrop in dark mode — foreground is #1a1a2e on light but #ebebed on dark. Opacity
-     still differs per theme (see Dialog): a scrim has to work harder over a dark canvas. */
-  --scrim: #05060a;
-
-  --radius: 0.625rem;
-
-  /* ---- Layer 2: shadcn semantic tokens (derived) ---- */
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--surface);
-  --card-foreground: var(--ink);
-  --popover: var(--surface);
-  --popover-foreground: var(--ink);
-  --primary: var(--moss);
-  --primary-foreground: var(--moss-contrast);
-  --secondary: color-mix(in srgb, var(--moss) 8%, var(--surface));
-  --secondary-foreground: var(--ink);
-  --muted: color-mix(in srgb, var(--fog) 12%, var(--paper));
-  --muted-foreground: var(--fog);
-  /* The INTERACTIVE HIGHLIGHT — the surface under a hovered/keyboard-focused menu or
-     select item. Derived from moss (the brand indigo), NOT clay: "accent" here is a
-     shadcn semantic meaning "the highlight", not "the decorative accent colour". It was
-     clay-mixed, which made every dropdown highlight read orange while the brand is
-     indigo. Clay keeps its real jobs — warning, chart-2, and warm decoration. */
-  --accent: color-mix(in srgb, var(--moss) 12%, var(--surface));
-  --accent-foreground: var(--ink);
-  --destructive: var(--danger);
-  --border: color-mix(in srgb, var(--fog) 30%, transparent);
-  --input: color-mix(in srgb, var(--fog) 34%, transparent);
-  --ring: var(--moss);
-
-  --chart-1: var(--moss);
-  --chart-2: var(--clay);
-  --chart-3: var(--signal);
-  --chart-4: var(--fog);
-  --chart-5: color-mix(in srgb, var(--moss) 55%, var(--clay));
-
-  --sidebar: color-mix(in srgb, var(--paper) 70%, var(--surface));
-  --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--moss);
-  --sidebar-primary-foreground: var(--moss-contrast);
-  /* Same story as --accent: a nav highlight follows the brand, not the warm decoration. */
-  --sidebar-accent: color-mix(in srgb, var(--moss) 12%, var(--surface));
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: color-mix(in srgb, var(--fog) 26%, transparent);
-  --sidebar-ring: var(--moss);
-}
-
-.dark {
-  /* ---- Layer 1: brand palette (dark) — ZINC neutrals, indigo accent, warm-clay secondary.
-     Neutrals sit on a near-neutral zinc ramp (hue 240°, sat ~4% — grey with a whisper of
-     cool, deliberately NOT the old slate at hue 218°/sat 45%, which read as navy). The
-     elevation ladder steps up subtly and its LIGHTNESS is unchanged from the slate ramp —
-     only hue/saturation moved, so contrast and elevation are exactly as they were:
-     paper (L0 canvas) → surface (L1 card) → surface-2 (L2 elevated) → surface-3 (L3 interactive). ---- */
-  --ink: #ebebed; /* primary text — near-white, neutral */
-  --paper: #09090b; /* app background — darkest zinc canvas (L0) */
-  --surface: #151517; /* cards / raised surfaces — subtly lighter (L1) */
-  --surface-2: #1d1d20; /* elevated: muted rows, popovers, menus (L2) */
-  --surface-3: #29292e; /* interactive: secondary chips, inputs, hover (L3) */
-  --moss: #7c78f5; /* primary actions — the brand indigo (accent only, never a surface) */
-  --moss-contrast: #ffffff;
-  --clay: #db9068; /* warm secondary accent (retained per theme decision) */
-  --fog: #8f8f96; /* secondary text, borders — neutral zinc gray */
-  --signal: #34d399;
-  --signal-contrast: #052e1c;
-  --danger: #e06a55;
-  --danger-contrast: #160f0c;
-  --warning: #e8b061; /* sits in the clay family so warm states read as one hue ramp */
-  --warning-contrast: #1f1405;
-  --info: #6bb6e8;
-  --info-contrast: #04141f;
-
-  /* ---- Layer 2: shadcn semantic tokens (re-derived — indigo bleed removed from surfaces) ---- */
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--surface);
-  --card-foreground: var(--ink);
-  --popover: var(--surface-2);
-  --popover-foreground: var(--ink);
-  --primary: var(--moss);
-  --primary-foreground: var(--moss-contrast);
-  --secondary: var(--surface-3); /* was moss-mix (purple) → now a neutral zinc step */
-  --secondary-foreground: var(--ink);
-  --muted: var(--surface-2); /* was fog-mix → the elevated zinc step */
-  --muted-foreground: var(--fog);
-  /* See :root — the highlight is moss-derived, not clay. 18% (vs light's 12%) because
-     a tint has to work harder to read against a dark surface. */
-  --accent: color-mix(in srgb, var(--moss) 18%, var(--surface-2));
-  --accent-foreground: var(--ink);
-  --destructive: var(--danger);
-  --border: color-mix(in srgb, var(--fog) 18%, transparent); /* neutral zinc hairline */
-  --input: var(--surface-3);
-  --ring: var(--moss);
-
-  --chart-1: var(--moss);
-  --chart-2: var(--clay);
-  --chart-3: var(--signal);
-  --chart-4: var(--fog);
-  --chart-5: color-mix(in srgb, var(--moss) 55%, var(--clay));
-
-  --sidebar: color-mix(in srgb, var(--paper) 55%, var(--surface)); /* zinc rail, just off the canvas */
-  --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--moss);
-  --sidebar-primary-foreground: var(--moss-contrast);
-  --sidebar-accent: color-mix(in srgb, var(--moss) 18%, var(--surface-2)); /* brand-tinted nav highlight */
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: color-mix(in srgb, var(--fog) 15%, transparent);
-  --sidebar-ring: var(--moss);
-}
-
-/* ==========================================================================
-   THEME MAPPING — expose tokens to Tailwind utilities (bg-moss, text-fog…).
-   ========================================================================== */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+  --font-weight-light: var(--weight-light);
+  --font-weight-normal: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
 
-  /* brand utilities — text-moss, bg-moss, text-fog, etc. */
-  --color-ink: var(--ink);
-  --color-paper: var(--paper);
-  --color-surface: var(--surface);
-  --color-moss: var(--moss);
-  --color-moss-contrast: var(--moss-contrast);
-  --color-clay: var(--clay);
-  --color-fog: var(--fog);
-  --color-signal: var(--signal);
-  --color-signal-contrast: var(--signal-contrast);
-  --color-danger: var(--danger);
-  --color-danger-contrast: var(--danger-contrast);
-  --color-warning: var(--warning);
-  --color-warning-contrast: var(--warning-contrast);
-  --color-info: var(--info);
-  --color-info-contrast: var(--info-contrast);
-  --color-on-media: var(--on-media);
-  --color-on-media-muted: var(--on-media-muted);
-  --color-scrim: var(--scrim);
+  /* Brand palette → utilities (e.g. bg-brand-600, text-brand-500) */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
 
-  /* fonts (defined in _app.tsx via next/font) */
-  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
-
-  /* radius scale */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Layout token → utility (e.g. max-w-container) */
+  --max-width-container: var(--container-max);
 }
 
-/* Type scale — 13 / 15 / 17 / 22 / 34 / 44, display 64 */
-@theme {
-  --text-xs: 0.8125rem;
-  --text-xs--line-height: 1.4;
-  --text-sm: 0.9375rem;
-  --text-sm--line-height: 1.5;
-  --text-base: 1.0625rem;
-  --text-base--line-height: 1.6;
-  --text-lg: 1.375rem;
-  --text-lg--line-height: 1.3;
-  --text-xl: 2.125rem;
-  --text-xl--line-height: 1.15;
-  --text-2xl: 2.75rem;
-  --text-2xl--line-height: 1.1;
-  --text-display: 4rem;
-  --text-display--line-height: 1;
-
-  /* Skeleton shimmer sweep — used by the onboarding matching loader (bento skeleton). */
-  --animate-shimmer: shimmer 1.5s linear infinite;
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-}
-
-/* ==========================================================================
-   BASE LAYER
-   ========================================================================== */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
-  }
-  /* Global keyboard-focus ring — but NOT on form fields. Text inputs/textareas/selects carry
-     their own focus styling (shadcn ring, or a bg/border change); the extra ring-offset ring
-     on top just looks like an ugly box. Buttons, links, etc. still get the ring. */
-  :focus-visible:not(input):not(textarea):not(select):not([contenteditable]) {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    ::before,
-    ::after {
-      animation-duration: 0.001ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.001ms !important;
-      scroll-behavior: auto !important;
-    }
+    /* Defensive: keep any stray over-wide child from scrolling the whole page
+       sideways on mobile. `clip` (not `hidden`) does not break position:sticky
+       (the floating nav) and is not a substitute for fixing real overflow. */
+    overflow-x: clip;
   }
 }
 
-/* base-ui renders focus guards inline; without this they add ~1px each to their
-   parent's flow (e.g. shifting the sidebar footer when the account menu opens).
-   Take them out of layout — they're clipped/invisible, focus still works. */
-[data-base-ui-focus-guard] {
-  position: absolute !important;
-}
-
-/* ==========================================================================
-   UTILITIES
-   ========================================================================== */
-@layer utilities {
-  .font-display {
-    font-family: var(--font-display);
+/* Smooth in-page anchor scrolling (nav links to #how-it-works, #faq), held
+   instant for users who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }
 
-/* iOS Safari auto-zooms (and then introduces a horizontal scroll) when you focus any
-   input whose font-size is < 16px. Force >=16px on mobile viewports so tapping any field
-   never zooms the page. */
-@media (max-width: 767px) {
-  input,
-  textarea,
-  select {
-    font-size: 16px !important;
+/* Marquee — infinite horizontal auto-scroll for the testimonials rows.
+   The track renders the cards in two identical halves; translating -50% moves
+   exactly one half, so the loop is seamless. Duration is per-row tunable via
+   --marquee-duration. */
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@utility animate-marquee-left {
+  animation: marquee-left var(--marquee-duration, 45s) linear infinite;
+}
+
+@utility animate-marquee-right {
+  animation: marquee-right var(--marquee-duration, 45s) linear infinite;
+}
+
+/* Floating app bubbles in the integrations section — a gentle vertical bob.
+   Per-bubble timing via --float-duration / --float-delay so they drift
+   independently of one another. */
+@keyframes integ-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+@utility animate-integ-float {
+  animation: integ-float var(--float-duration, 6s) ease-in-out
+    var(--float-delay, 0s) infinite;
+}
+
+/* Free-flowing, blurred gradient blobs that morph and drift behind a section
+   (used behind the testimonials) — a lightweight "react-bits"-style moving
+   gradient. Animates transform + border-radius (GPU-composited) so the heavy
+   blur is only rasterized once. The layer is edge-masked (.blob-mask) so it
+   fades out softly instead of hard-clipping at the section boundary. */
+@keyframes blob-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    border-radius: 42% 58% 63% 37% / 45% 45% 55% 55%;
+  }
+  50% {
+    transform: translate(14%, 10%) scale(1.2);
+    border-radius: 60% 40% 35% 65% / 55% 60% 40% 45%;
+  }
+}
+
+@keyframes blob-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    border-radius: 55% 45% 50% 50% / 50% 55% 45% 50%;
+  }
+  50% {
+    transform: translate(-16%, -12%) scale(0.88);
+    border-radius: 40% 60% 55% 45% / 60% 40% 55% 45%;
+  }
+}
+
+@keyframes blob-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.05);
+    border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
+  }
+  50% {
+    transform: translate(12%, -16%) scale(1.28);
+    border-radius: 65% 35% 45% 55% / 40% 55% 45% 60%;
+  }
+}
+
+@utility animate-blob-1 {
+  animation: blob-1 18s ease-in-out infinite;
+}
+
+@utility animate-blob-2 {
+  animation: blob-2 22s ease-in-out infinite;
+}
+
+@utility animate-blob-3 {
+  animation: blob-3 20s ease-in-out infinite;
+}
+
+/* Ambient dot-grid background — a uniform field of small dots that drifts
+   slowly, used behind text-only sections (e.g. the opportunity section's
+   pinned heading). Pure CSS (one repeating radial-gradient tile + an animated
+   background-position), not the mouse-reactive antigravity field: this is a
+   quiet, non-interactive texture, not a cursor-follow effect. The drift
+   distance is a whole multiple of the tile size so the loop is seamless. */
+@keyframes dot-grid-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 220px 220px;
+  }
+}
+
+.dot-grid-bg {
+  background-image: radial-gradient(
+    circle,
+    var(--dot-grid-color, oklch(0.3 0 0 / 45%)) 1.4px,
+    transparent 1.4px
+  );
+  background-size: 22px 22px;
+  animation: dot-grid-drift 40s linear infinite;
+}
+
+/* Soft top/bottom fade so a blurred-blob layer never hard-clips at its section
+   boundaries (esp. the line with the section above). The top ~16% and bottom
+   ~16% fade to transparent, so the overflow-hidden clip falls in an already-
+   invisible zone. */
+.blob-mask {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 16%,
+    #000 84%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 16%,
+    #000 84%,
+    transparent 100%
+  );
+}
+
+/* How-it-Works step 1 card: blinking typewriter caret + a small reveal used
+   for the rotating step label and Scout finding. */
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes finding-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Star-border shimmer: a glinting radial dot that drifts along the top and
+   bottom edges of a button (two layers, opposite directions). Adapted from the
+   react-bits StarBorder. Duration is set inline per button via `animation`. */
+@keyframes star-movement-top {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(100%, 0%);
+    opacity: 0;
+  }
+}
+
+@keyframes star-movement-bottom {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-100%, 0%);
+    opacity: 0;
+  }
+}
+
+/* First-visit intro: the active progress segment fills left-to-right. */
+@keyframes intro-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* First-visit intro: line cross-fade — outgoing fades out as incoming fades in. */
+@keyframes intro-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* How-it-Works stack: the step cards pin + stack only while <ScrollStack> has
+   turned it on (i.e. it decided they fit the viewport — see scroll-stack.tsx).
+   The `top` offset grows per card index (--stack-i) so buried cards peek out at
+   the top of the pile. Tighter offsets on small screens to save vertical room. */
+[data-stacking] [data-stack-card] {
+  position: sticky;
+  top: calc(var(--header-height) + 1rem + var(--stack-i, 0) * 12px);
+}
+
+@media (min-width: 1024px) {
+  [data-stacking] [data-stack-card] {
+    top: calc(var(--header-height) + 2rem + var(--stack-i, 0) * 18px);
+  }
+}
+
+/* Respect users who prefer reduced motion: hold everything still. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right,
+  .animate-integ-float,
+  .animate-blob-1,
+  .animate-blob-2,
+  .animate-blob-3,
+  .star-anim,
+  .dot-grid-bg {
+    animation: none !important;
+  }
+  /* Accordion: open/close instantly instead of animating its height. */
+  [data-slot="accordion-content"] {
+    animation: none !important;
+  }
+  /* How-it-Works stack: don't pin/stack the step cards — lay them out flat. */
+  [data-stack-card] {
+    position: static !important;
+  }
+  [data-stack-inner] {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  /* The testimonial marquee can no longer auto-scroll, so make each row
+     swipeable instead of a frozen track that only shows the first card. */
+  .marquee-viewport {
+    overflow-x: auto;
   }
 }

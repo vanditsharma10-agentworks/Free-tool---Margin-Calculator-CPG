@@ -27,7 +27,7 @@ export function ProvenanceNote({
 
   const dot =
     provenance === "exact"
-      ? "bg-moss"
+      ? "bg-primary"
       : provenance === "averaged"
         ? "border border-dashed border-muted-foreground bg-transparent"
         : "border border-dashed border-warning bg-transparent";
@@ -48,7 +48,7 @@ export function ProvenanceNote({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="inline-flex items-center gap-1 text-xs font-medium text-moss transition-colors hover:text-moss/80"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
           >
             <ChevronDownIcon className={cn("size-3 transition-transform", open && "rotate-180")} />
             {peersLabel}

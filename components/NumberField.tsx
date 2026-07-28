@@ -55,7 +55,7 @@ export function NumberField({
         <span
           className={cn(
             "mt-1.5 flex items-center gap-1 rounded-lg bg-muted/40 px-3 ring-1 ring-border transition-all",
-            "focus-within:bg-card focus-within:ring-2 focus-within:ring-moss",
+            "focus-within:bg-card focus-within:ring-2 focus-within:ring-primary",
             disabled && "pointer-events-none"
           )}
         >

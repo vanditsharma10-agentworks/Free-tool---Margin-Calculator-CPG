@@ -76,11 +76,11 @@ export function RetailerPicker({
             type="button"
             className={cn(
               "flex w-full items-center justify-between gap-3 rounded-xl border border-input bg-card px-4 py-3 text-left transition-colors",
-              "hover:border-moss/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              "hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             )}
           >
             <span className="flex min-w-0 items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-moss/12 text-moss">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/12 text-primary">
                 {value.kind === "retailer" ? <StoreIcon className="size-4" /> : <LayersIcon className="size-4" />}
               </span>
               <span className="min-w-0">
@@ -125,7 +125,7 @@ export function RetailerPicker({
                       isSel && "bg-accent"
                     )}
                   >
-                    <CheckIcon className={cn("size-3.5 shrink-0", isSel ? "text-moss" : "opacity-0")} />
+                    <CheckIcon className={cn("size-3.5 shrink-0", isSel ? "text-primary" : "opacity-0")} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-medium">{r.name}</span>
                       <span className="block truncate text-xs text-muted-foreground">
@@ -136,7 +136,7 @@ export function RetailerPicker({
                     </span>
                     {r.stars ? (
                       <span
-                        className="shrink-0 font-mono text-[10px] text-moss"
+                        className="shrink-0 font-mono text-[10px] text-primary"
                         title={`${r.stars}/5 — how open this chain is to early brands`}
                       >
                         {stars(r.stars)}
@@ -165,7 +165,7 @@ export function RetailerPicker({
                       isSel && "bg-accent"
                     )}
                   >
-                    <CheckIcon className={cn("size-3.5 shrink-0", isSel ? "text-moss" : "opacity-0")} />
+                    <CheckIcon className={cn("size-3.5 shrink-0", isSel ? "text-primary" : "opacity-0")} />
                     <span className="min-w-0 flex-1 truncate">Any {c.name.toLowerCase()} store</span>
                     <Badge variant="neutral" size="sm" className="shrink-0">
                       avg of {c.sampleSize}

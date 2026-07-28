@@ -15,7 +15,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-moss/12 text-moss [a]:hover:bg-moss/20",
+        default: "bg-primary/12 text-primary [a]:hover:bg-primary/20",
         secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",

@@ -8,51 +8,71 @@
 /** The live product site. The tool merges into it later; links are absolute so
  * they're correct on the destination and in schema. */
 export const SITE = "https://www.getagentworks.com";
-export const CANONICAL = `${SITE}/tools/retail-margin-calculator`;
-export const SIGNUP_URL = SITE; // homepage carries the signup flow
+export const PATH = "/tools/retail-margin-calculator";
+export const CANONICAL = `${SITE}${PATH}`;
 
+/** Site FAQ shape ({ id, question, answer }) so it drops straight into the
+ * website's <FaqSection>; the same array feeds the FAQPage JSON-LD. */
 export interface FaqItem {
-  q: string;
-  /** Plain-text answer (also fed to FAQPage schema). */
-  a: string;
+  id: string;
+  question: string;
+  answer: string;
 }
 
 export const FAQ_ITEMS: FaqItem[] = [
   {
-    q: "What's a typical retailer margin for wellness or protein bars?",
-    a: "It depends on the channel. Conventional grocery usually wants ~22–30%; natural and specialty retailers run ~40–50%+. Pick your actual retailer in the calculator and it fills in what brands report for that chain.",
+    id: "typical-margin",
+    question: "What's a typical retailer margin for wellness or protein bars?",
+    answer:
+      "It depends on the channel. Conventional grocery usually wants ~22–30%; natural and specialty retailers run ~40–50%+. Pick your actual retailer in the calculator and it fills in what brands report for that chain.",
   },
   {
-    q: "What retail margin do Sprouts and Whole Foods expect?",
-    a: "Both sit in the natural/specialty band — roughly 40–50%. In the calculator, choosing Sprouts or a Whole Foods–type natural retailer pre-fills its reported margin so you can price backwards from the shelf.",
+    id: "sprouts-wfm",
+    question: "What retail margin do Sprouts and Whole Foods expect?",
+    answer:
+      "Both sit in the natural/specialty band — roughly 40–50%. In the calculator, choosing Sprouts or a Whole Foods–type natural retailer pre-fills its reported margin so you can price backwards from the shelf.",
   },
   {
-    q: "Is a $1,000 slotting fee per SKU — or per store?",
-    a: "Usually per SKU, per store — which is exactly what makes it dangerous. Most chains run ~$50–$300 per SKU per store; big national banners can hit $250–$1,000+ per item. The calculator multiplies it out across your store count and SKUs so you see the real number before you commit.",
+    id: "slotting-per-store",
+    question: "Is a $1,000 slotting fee per SKU — or per store?",
+    answer:
+      "Usually per SKU, per store — which is exactly what makes it dangerous. Most chains run ~$50–$300 per SKU per store; big national banners can hit $250–$1,000+ per item. The calculator multiplies it out across your store count and SKUs so you see the real number before you commit.",
   },
   {
-    q: "What markup does a regional distributor want — 15%?",
-    a: "Most distributors want ~15–25%, and push toward the top of that on low-volume independent drops where the delivery economics are worse. You can set the exact number in the tool.",
+    id: "distributor-markup",
+    question: "What markup does a regional distributor want — 15%?",
+    answer:
+      "Most distributors want ~15–25%, and push toward the top of that on low-volume independent drops where the delivery economics are worse. You can set the exact number in the tool.",
   },
   {
-    q: 'When people say "50% gross margin," do you factor freight into COGS?',
-    a: "Yes — freight belongs in your landed cost. And even a clean 50% gross margin isn't the finish line: after distributor margin, retailer margin, slotting and trade spend, your contribution margin often lands ~10–20% of the shelf price. That's the number worth protecting.",
+    id: "freight-in-cogs",
+    question: 'When people say "50% gross margin," do you factor freight into COGS?',
+    answer:
+      "Yes — freight belongs in your landed cost. And even a clean 50% gross margin isn't the finish line: after distributor margin, retailer margin, slotting and trade spend, your contribution margin often lands ~10–20% of the shelf price. That's the number worth protecting.",
   },
   {
-    q: "What's the difference between a TPR, a billback, and a scan promo?",
-    a: "A TPR (temporary price reduction) is a short-term shelf-price cut you fund; a billback bills you after the fact for an agreed discount or fee; a scan promo pays the retailer per unit scanned at the register. All three are trade spend — money off your margin — so budget them in, not around.",
+    id: "tpr-billback-scan",
+    question: "What's the difference between a TPR, a billback, and a scan promo?",
+    answer:
+      "A TPR (temporary price reduction) is a short-term shelf-price cut you fund; a billback bills you after the fact for an agreed discount or fee; a scan promo pays the retailer per unit scanned at the register. All three are trade spend — money off your margin — so budget them in, not around.",
   },
   {
-    q: "Is a 20% margin the same as a 25% markup?",
-    a: "Yes — they're the same deal described from two sides. Margin is a share of the selling price; markup is a share of your cost. A $10 item that cost $8 has a 20% margin ($2 ÷ $10) and a 25% markup ($2 ÷ $8). The converter in the tool flips between them so you never quote the wrong one.",
+    id: "margin-vs-markup",
+    question: "Is a 20% margin the same as a 25% markup?",
+    answer:
+      "Yes — they're the same deal described from two sides. Margin is a share of the selling price; markup is a share of your cost. A $10 item that cost $8 has a 20% margin ($2 ÷ $10) and a 25% markup ($2 ÷ $8). The converter in the tool flips between them so you never quote the wrong one.",
   },
   {
-    q: "How do you calculate retail margin?",
-    a: "Retail margin = (retail price − cost) ÷ retail price. A $5 item that cost $3 has a $2 margin, or 40%. For CPG that cost should be your landed cost (including freight), and retail margin is just one layer — the calculator stacks it with the distributor's cut and slotting to show your real take.",
+    id: "calc-retail-margin",
+    question: "How do you calculate retail margin?",
+    answer:
+      "Retail margin = (retail price − cost) ÷ retail price. A $5 item that cost $3 has a $2 margin, or 40%. For CPG that cost should be your landed cost (including freight), and retail margin is just one layer — the calculator stacks it with the distributor's cut and slotting to show your real take.",
   },
   {
-    q: "Where do your numbers come from?",
-    a: "They're community estimates — figures brands report paying across 219 US retail chains, not confirmed by the retailers or distributors themselves. When a specific chain hasn't reported something, the tool says so and uses a channel average. Always confirm the real terms with your buyer.",
+    id: "sources",
+    question: "Where do your numbers come from?",
+    answer:
+      "They're community estimates — figures brands report paying across 219 US retail chains, not confirmed by the retailers or distributors themselves. When a specific chain hasn't reported something, the tool says so and uses a channel average. Always confirm the real terms with your buyer.",
   },
 ];
 

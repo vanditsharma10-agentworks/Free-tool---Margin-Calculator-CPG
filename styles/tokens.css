@@ -1,0 +1,90 @@
+/* =============================================================================
+ * THEME LAYER — design tokens (single source of truth)
+ * -----------------------------------------------------------------------------
+ * Tokens only · single light theme · no dark/light switching.
+ *
+ * Two tiers:
+ *   1. Primitives — raw, brand-agnostic values (palette, scales). Renamed/retuned
+ *      here without touching any component.
+ *   2. Semantic   — the contract the UI consumes (also the variables shadcn/ui
+ *      reads). Built from primitives so a rebrand is a one-file edit.
+ *
+ * Components must NEVER hardcode colors/spacing — they reference these tokens
+ * (directly, or via Tailwind utilities mapped in globals.css `@theme inline`).
+ * ========================================================================== */
+
+:root {
+  /* ---- Primitives · brand palette ---------------------------------------- */
+  --brand-50: oklch(0.971 0.013 252);
+  --brand-100: oklch(0.932 0.031 256);
+  --brand-200: oklch(0.882 0.059 254);
+  --brand-300: oklch(0.811 0.103 252);
+  --brand-400: oklch(0.707 0.162 252);
+  --brand-500: oklch(0.623 0.198 260);
+  --brand-600: oklch(0.544 0.227 279.7); /* brand primary — #5e50ee */
+  --brand-700: oklch(0.488 0.217 264);
+  --brand-800: oklch(0.424 0.180 266);
+  --brand-900: oklch(0.379 0.146 266);
+
+  /* ---- Primitives · layout scale ----------------------------------------- */
+  --header-height: 4rem; /* sticky top-nav height (64px) */
+  --container-max: 80rem; /* content max-width (1280px)   */
+  --container-padding: 1.5rem; /* horizontal gutter (24px)     */
+
+  /* ---- Primitives · type weights (Montserrat axis: 300–700) -------------- */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- Semantic · surfaces & text (shadcn contract) ---------------------- */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* ---- Semantic · brand-driven roles ------------------------------------- */
+  --primary: var(--brand-600);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: var(--brand-500);
+
+  /* ---- Semantic · neutral roles ------------------------------------------ */
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+
+  /* ---- Semantic · data viz ----------------------------------------------- */
+  --chart-1: var(--brand-400);
+  --chart-2: var(--brand-600);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+
+  /* ---- Semantic · typography (Montserrat everywhere) --------------------- */
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-montserrat), ui-monospace, monospace;
+  --font-heading: var(--font-montserrat), ui-sans-serif, system-ui,
+    sans-serif;
+
+  /* ---- Semantic · shape -------------------------------------------------- */
+  --radius: 0.625rem;
+
+  /* ---- Semantic · sidebar (kept for shadcn compatibility) ---------------- */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: var(--brand-600);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: var(--brand-500);
+}

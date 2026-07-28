@@ -38,7 +38,7 @@ const money0 = (n: number) => `$${Math.round(n).toLocaleString()}`;
 function SectionLabel({ children, step }: { children: React.ReactNode; step: number }) {
   return (
     <div className="mb-3 flex items-center gap-2">
-      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-moss/12 font-mono text-[10px] font-semibold text-moss">
+      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary/12 font-mono text-[10px] font-semibold text-primary">
         {step}
       </span>
       <span className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
@@ -174,7 +174,7 @@ export function Calculator({ data }: { data: AppData }) {
                   className={cn(
                     "rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all",
                     mode === m
-                      ? "bg-moss text-moss-contrast shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -395,9 +395,9 @@ export function Calculator({ data }: { data: AppData }) {
 
         {/* ══ PREVIEW ═════════════════════════════════════════════════ */}
         <div className="order-1 lg:sticky lg:top-5 lg:order-2">
-          <div className="overflow-hidden rounded-xl border border-moss/25 bg-card shadow-sm ring-1 ring-moss/5">
+          <div className="overflow-hidden rounded-xl border border-primary/25 bg-card shadow-sm ring-1 ring-primary/5">
             {/* headline */}
-            <div className="bg-linear-to-br from-moss/[0.09] via-moss/[0.04] to-transparent px-5 pt-5 pb-5">
+            <div className="bg-linear-to-br from-primary/[0.09] via-primary/[0.04] to-transparent px-5 pt-5 pb-5">
               {error ? (
                 <p className="flex items-center gap-2 text-sm text-destructive">
                   <TriangleAlertIcon className="size-4" /> {error}
@@ -489,14 +489,14 @@ export function Calculator({ data }: { data: AppData }) {
             {entryOn && (
               <div className="border-t px-5 py-4">
                 <div className="flex items-center gap-2">
-                  <WalletIcon className="size-3.5 text-moss" />
+                  <WalletIcon className="size-3.5 text-primary" />
                   <p className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                     Cost to get on shelf
                   </p>
                 </div>
 
                 {rSlot.raw && (
-                  <p className="mt-2.5 rounded-lg bg-muted/50 px-3 py-2 font-mono text-[12px] text-moss">
+                  <p className="mt-2.5 rounded-lg bg-muted/50 px-3 py-2 font-mono text-[12px] text-primary">
                     “{rSlot.raw}”
                   </p>
                 )}
@@ -589,7 +589,7 @@ export function Calculator({ data }: { data: AppData }) {
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <Panel>
           <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-            <ArrowRightLeftIcon className="size-3.5 text-moss" />
+            <ArrowRightLeftIcon className="size-3.5 text-primary" />
             Margin ↔ markup
           </p>
           <MarginMarkup />
@@ -607,7 +607,7 @@ export function Calculator({ data }: { data: AppData }) {
               not confirmed by the retailers or distributors named.
             </p>
             <p>
-              A <span className="inline-block size-2 translate-y-px rounded-full bg-moss" /> solid
+              A <span className="inline-block size-2 translate-y-px rounded-full bg-primary" /> solid
               dot means the figure is that retailer&apos;s own reported number. A{" "}
               <span className="inline-block size-2 translate-y-px rounded-full border border-dashed border-muted-foreground" />{" "}
               hollow dot means we averaged across similar chains because that retailer hasn&apos;t
