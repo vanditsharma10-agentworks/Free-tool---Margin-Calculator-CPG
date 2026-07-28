@@ -45,23 +45,25 @@ export function NumberField({
   return (
     <div className={cn(disabled && "opacity-55")}>
       <label className="block">
-        <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+        <span className="flex items-center gap-1.5 text-[12px] font-semibold">
           {icon && <span className="text-muted-foreground">{icon}</span>}
           {label}
         </span>
-        {hint && <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>}
+        {hint && (
+          <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{hint}</span>
+        )}
         <span
           className={cn(
-            "mt-1.5 flex items-center gap-1 rounded-lg border border-input bg-card px-3 transition-colors",
-            "focus-within:border-moss focus-within:ring-2 focus-within:ring-moss/25",
+            "mt-1.5 flex items-center gap-1 rounded-lg bg-muted/40 px-3 ring-1 ring-border transition-all",
+            "focus-within:bg-card focus-within:ring-2 focus-within:ring-moss",
             disabled && "pointer-events-none"
           )}
         >
-          {prefix && <span className="shrink-0 text-sm text-muted-foreground">{prefix}</span>}
+          {prefix && <span className="shrink-0 text-[13px] text-muted-foreground">{prefix}</span>}
           <input
             type="number"
             inputMode="decimal"
-            className="w-full bg-transparent py-2.5 font-mono text-[15px] tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-full bg-transparent py-2 font-mono text-[15px] font-medium tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             value={shown}
             step={step}
             min={min}
@@ -73,7 +75,7 @@ export function NumberField({
               if (e.key === "Enter") (e.target as HTMLInputElement).blur();
             }}
           />
-          {suffix && <span className="shrink-0 text-sm text-muted-foreground">{suffix}</span>}
+          {suffix && <span className="shrink-0 text-[13px] text-muted-foreground">{suffix}</span>}
         </span>
       </label>
     </div>

@@ -30,19 +30,25 @@ export function Waterfall({
 
   return (
     <div>
-      <div className="flex h-11 w-full overflow-hidden rounded-lg" role="img"
-           aria-label={`Shelf price ${money(result.shelf)} split between cost, your profit, distributor and store`}>
+      <div
+        className="flex h-9 w-full gap-0.5 overflow-hidden rounded-lg"
+        role="img"
+        aria-label={`Shelf price ${money(result.shelf)} split between cost, your profit, distributor and store`}
+      >
         {segs.map((s) => {
           const pct = (s.val / shelf) * 100;
           return (
             <div
               key={s.key}
-              className={cn("flex items-center justify-center transition-[width] duration-300", s.cls)}
+              className={cn(
+                "flex items-center justify-center rounded-[3px] transition-[width] duration-300 ease-out",
+                s.cls
+              )}
               style={{ width: `${pct}%` }}
               title={`${s.label}: ${money(s.val)} (${pct.toFixed(0)}%)`}
             >
-              {pct >= 10 && (
-                <span className="px-1 font-mono text-[11px] font-semibold text-white/95">
+              {pct >= 12 && (
+                <span className="px-1 font-mono text-[10px] font-semibold text-white/95">
                   {pct.toFixed(0)}%
                 </span>
               )}
@@ -51,12 +57,12 @@ export function Waterfall({
         })}
       </div>
 
-      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+      <ul className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1">
         {segs.map((s) => (
-          <li key={s.key} className="flex items-center gap-1.5 text-xs">
-            <span className={cn("size-2.5 rounded-[3px]", s.cls)} aria-hidden />
+          <li key={s.key} className="flex items-center gap-1.5 text-[11px]">
+            <span className={cn("size-2 rounded-[2px]", s.cls)} aria-hidden />
             <span className="text-muted-foreground">{s.label}</span>
-            <span className="font-mono text-foreground">{money(s.val)}</span>
+            <span className="font-mono font-medium text-foreground tabular-nums">{money(s.val)}</span>
           </li>
         ))}
       </ul>

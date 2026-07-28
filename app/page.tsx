@@ -88,15 +88,15 @@ export default async function Home() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-5 pt-10 pb-24 sm:px-6">
-      <header className="mb-7 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-[34px] leading-tight font-semibold tracking-tight">
+    <main className="mx-auto max-w-[1360px] px-4 pt-7 pb-16 sm:px-6">
+      <header className="mb-6 flex items-center justify-between gap-4 border-b pb-5">
+        <div className="min-w-0">
+          <h1 className="font-heading text-[26px] leading-tight font-semibold tracking-tight">
             Retail Price &amp; Margin Calculator
           </h1>
-          <p className="mt-1.5 max-w-xl text-[15px] text-muted-foreground">
-            Work out what your product sells for on the shelf — and what it costs to get there —
-            using real figures from {data.retailers.length} US retail chains.
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            What your product sells for on the shelf, and what it costs to get there —
+            using reported figures from {data.retailers.length} US retail chains.
           </p>
         </div>
         <ThemeToggle />
