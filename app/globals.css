@@ -1,118 +1,334 @@
-/* Functional placeholder styling. Design-system polish (brand tokens, design-repo
-   components) is work #1 — this just makes the calculator legible and usable. */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Tailwind 4 scans from this file's location; name the roots explicitly so
+   components/ and lib/ outside app/ are picked up. */
+@source "../app";
+@source "../components";
+@source "../lib";
+
+/* SYNCED from packages/ui/tokens.css by sync-workbench.sh — do not edit here. */
+/* ==========================================================================
+   @agentworks/ui — the token layer.
+   
+   The ONE source of truth for the design system's colour, type, radius and base
+   rules. Import it from the consuming app's globals.css AFTER tailwindcss:
+   
+     @import "tailwindcss";
+     @import "tw-animate-css";
+     @import "shadcn/tailwind.css";   <- supplies the data-open/data-closed variants
+     @import "@agentworks/ui/tokens.css";
+     @source "./packages/ui/src";     <- REQUIRED: Tailwind can't see node_modules
+   
+   Deliberately does NOT import tailwindcss itself — that belongs to the app, and
+   importing it twice would emit the whole framework twice.
+   
+   App-specific rules do NOT live here (ColorBends, the devtools toggle). Those
+   stay in the app's own globals.css.
+   ========================================================================== */
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   DESIGN TOKENS — brand palette (Layer 1) + shadcn semantic tokens (Layer 2,
+   derived). Ported from the reference app so re-theming never touches
+   component code.
+   ========================================================================== */
 
 :root {
-  --brand: #5e50ee; /* Agentworks primary (pinned hex) */
-  --brand-weak: #efedfd;
-  --ink: #1a1a2e;
-  --muted: #6b6b80;
-  --line: #e4e4ee;
-  --bg: #ffffff;
-  --panel: #fafaff;
-  --ok: #1f9d61;
-  --warn: #b8860b;
-  --bad: #cc3344;
-  --radius: 10px;
+  /* ---- Layer 1: brand palette (light) ---- */
+  --ink: #1a1a2e; /* primary text — deep indigo-black */
+  --paper: #f7f7fb; /* app background — cool off-white */
+  --surface: #ffffff; /* cards / raised surfaces */
+  /* Brand indigo. The design-language repo documents #5b50f0; the confirmed
+     brand hex is #5e50ee, so that wins here. (Token name "moss" kept for
+     historical reasons — it is indigo, not green.) */
+  --moss: #5e50ee; /* primary actions — the brand indigo (name kept) */
+  --moss-contrast: #ffffff; /* text on the primary */
+  --clay: #c96f4a; /* warm accent */
+  --fog: #8b8b9c; /* secondary text, borders (cool gray) */
+  --signal: #16a34a; /* success */
+  --signal-contrast: #ffffff;
+  --danger: #b3402f; /* errors */
+  --danger-contrast: #ffffff;
+  --warning: #b06f16; /* warnings — the token the app lacked; 84 raw amber-* hits stood in for it */
+  --warning-contrast: #ffffff;
+  --info: #0b6fa4; /* neutral notices — replaces the raw sky-* used for "opened"/info states */
+  --info-contrast: #ffffff;
+  --brand-panel: #1b1740; /* fixed deep indigo for the auth brand panel (same in light + dark) */
+  /* Text/icons sitting on a photo scrim (CardMedia overlays). Deliberately NOT redefined
+     in .dark: the scrim is always dark, so this stays near-white in BOTH themes. It's a
+     real token rather than a raw text-white so the intent is legible and greppable —
+     the app currently spells this `text-white` in 47 places. */
+  --on-media: #ffffff;
+  --on-media-muted: #d6d6db;
+  /* The backdrop behind a dialog/sheet. Like --on-media, deliberately NOT redefined in
+     .dark: a scrim is a shadow, not a foreground. It must be dark in BOTH themes. This
+     replaced `bg-foreground/40`, which tracked the theme and therefore rendered a WHITE
+     backdrop in dark mode — foreground is #1a1a2e on light but #ebebed on dark. Opacity
+     still differs per theme (see Dialog): a scrim has to work harder over a dark canvas. */
+  --scrim: #05060a;
+
+  --radius: 0.625rem;
+
+  /* ---- Layer 2: shadcn semantic tokens (derived) ---- */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--moss);
+  --primary-foreground: var(--moss-contrast);
+  --secondary: color-mix(in srgb, var(--moss) 8%, var(--surface));
+  --secondary-foreground: var(--ink);
+  --muted: color-mix(in srgb, var(--fog) 12%, var(--paper));
+  --muted-foreground: var(--fog);
+  /* The INTERACTIVE HIGHLIGHT — the surface under a hovered/keyboard-focused menu or
+     select item. Derived from moss (the brand indigo), NOT clay: "accent" here is a
+     shadcn semantic meaning "the highlight", not "the decorative accent colour". It was
+     clay-mixed, which made every dropdown highlight read orange while the brand is
+     indigo. Clay keeps its real jobs — warning, chart-2, and warm decoration. */
+  --accent: color-mix(in srgb, var(--moss) 12%, var(--surface));
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --border: color-mix(in srgb, var(--fog) 30%, transparent);
+  --input: color-mix(in srgb, var(--fog) 34%, transparent);
+  --ring: var(--moss);
+
+  --chart-1: var(--moss);
+  --chart-2: var(--clay);
+  --chart-3: var(--signal);
+  --chart-4: var(--fog);
+  --chart-5: color-mix(in srgb, var(--moss) 55%, var(--clay));
+
+  --sidebar: color-mix(in srgb, var(--paper) 70%, var(--surface));
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--moss);
+  --sidebar-primary-foreground: var(--moss-contrast);
+  /* Same story as --accent: a nav highlight follows the brand, not the warm decoration. */
+  --sidebar-accent: color-mix(in srgb, var(--moss) 12%, var(--surface));
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: color-mix(in srgb, var(--fog) 26%, transparent);
+  --sidebar-ring: var(--moss);
 }
 
-* { box-sizing: border-box; }
+.dark {
+  /* ---- Layer 1: brand palette (dark) — ZINC neutrals, indigo accent, warm-clay secondary.
+     Neutrals sit on a near-neutral zinc ramp (hue 240°, sat ~4% — grey with a whisper of
+     cool, deliberately NOT the old slate at hue 218°/sat 45%, which read as navy). The
+     elevation ladder steps up subtly and its LIGHTNESS is unchanged from the slate ramp —
+     only hue/saturation moved, so contrast and elevation are exactly as they were:
+     paper (L0 canvas) → surface (L1 card) → surface-2 (L2 elevated) → surface-3 (L3 interactive). ---- */
+  --ink: #ebebed; /* primary text — near-white, neutral */
+  --paper: #09090b; /* app background — darkest zinc canvas (L0) */
+  --surface: #151517; /* cards / raised surfaces — subtly lighter (L1) */
+  --surface-2: #1d1d20; /* elevated: muted rows, popovers, menus (L2) */
+  --surface-3: #29292e; /* interactive: secondary chips, inputs, hover (L3) */
+  --moss: #7c78f5; /* primary actions — the brand indigo (accent only, never a surface) */
+  --moss-contrast: #ffffff;
+  --clay: #db9068; /* warm secondary accent (retained per theme decision) */
+  --fog: #8f8f96; /* secondary text, borders — neutral zinc gray */
+  --signal: #34d399;
+  --signal-contrast: #052e1c;
+  --danger: #e06a55;
+  --danger-contrast: #160f0c;
+  --warning: #e8b061; /* sits in the clay family so warm states read as one hue ramp */
+  --warning-contrast: #1f1405;
+  --info: #6bb6e8;
+  --info-contrast: #04141f;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: var(--ink);
-  background: var(--bg);
-  line-height: 1.5;
+  /* ---- Layer 2: shadcn semantic tokens (re-derived — indigo bleed removed from surfaces) ---- */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-2);
+  --popover-foreground: var(--ink);
+  --primary: var(--moss);
+  --primary-foreground: var(--moss-contrast);
+  --secondary: var(--surface-3); /* was moss-mix (purple) → now a neutral zinc step */
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-2); /* was fog-mix → the elevated zinc step */
+  --muted-foreground: var(--fog);
+  /* See :root — the highlight is moss-derived, not clay. 18% (vs light's 12%) because
+     a tint has to work harder to read against a dark surface. */
+  --accent: color-mix(in srgb, var(--moss) 18%, var(--surface-2));
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --border: color-mix(in srgb, var(--fog) 18%, transparent); /* neutral zinc hairline */
+  --input: var(--surface-3);
+  --ring: var(--moss);
+
+  --chart-1: var(--moss);
+  --chart-2: var(--clay);
+  --chart-3: var(--signal);
+  --chart-4: var(--fog);
+  --chart-5: color-mix(in srgb, var(--moss) 55%, var(--clay));
+
+  --sidebar: color-mix(in srgb, var(--paper) 55%, var(--surface)); /* zinc rail, just off the canvas */
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--moss);
+  --sidebar-primary-foreground: var(--moss-contrast);
+  --sidebar-accent: color-mix(in srgb, var(--moss) 18%, var(--surface-2)); /* brand-tinted nav highlight */
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: color-mix(in srgb, var(--fog) 15%, transparent);
+  --sidebar-ring: var(--moss);
 }
 
-.wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; }
+/* ==========================================================================
+   THEME MAPPING — expose tokens to Tailwind utilities (bg-moss, text-fog…).
+   ========================================================================== */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
-h1 { font-size: 1.7rem; margin: 0 0 4px; }
-.sub { color: var(--muted); margin: 0 0 24px; }
+  /* brand utilities — text-moss, bg-moss, text-fog, etc. */
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-moss: var(--moss);
+  --color-moss-contrast: var(--moss-contrast);
+  --color-clay: var(--clay);
+  --color-fog: var(--fog);
+  --color-signal: var(--signal);
+  --color-signal-contrast: var(--signal-contrast);
+  --color-danger: var(--danger);
+  --color-danger-contrast: var(--danger-contrast);
+  --color-warning: var(--warning);
+  --color-warning-contrast: var(--warning-contrast);
+  --color-info: var(--info);
+  --color-info-contrast: var(--info-contrast);
+  --color-on-media: var(--on-media);
+  --color-on-media-muted: var(--on-media-muted);
+  --color-scrim: var(--scrim);
 
-.card {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  background: var(--panel);
-  margin-bottom: 20px;
+  /* fonts (defined in _app.tsx via next/font) */
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+
+  /* radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
 }
 
-.row { display: flex; flex-wrap: wrap; gap: 16px; }
-.row > .field { flex: 1 1 180px; }
+/* Type scale — 13 / 15 / 17 / 22 / 34 / 44, display 64 */
+@theme {
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.375rem;
+  --text-lg--line-height: 1.3;
+  --text-xl: 2.125rem;
+  --text-xl--line-height: 1.15;
+  --text-2xl: 2.75rem;
+  --text-2xl--line-height: 1.1;
+  --text-display: 4rem;
+  --text-display--line-height: 1;
 
-label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; }
-.hint { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
-
-input[type="number"], select {
-  width: 100%;
-  padding: 9px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background: #fff;
+  /* Skeleton shimmer sweep — used by the onboarding matching loader (bento skeleton). */
+  --animate-shimmer: shimmer 1.5s linear infinite;
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
-input:focus, select:focus { outline: 2px solid var(--brand); border-color: var(--brand); }
 
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.seg button {
-  border: 0; background: #fff; padding: 8px 16px; font-size: 0.9rem; cursor: pointer; color: var(--muted);
+/* ==========================================================================
+   BASE LAYER
+   ========================================================================== */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* Global keyboard-focus ring — but NOT on form fields. Text inputs/textareas/selects carry
+     their own focus styling (shadcn ring, or a bg/border change); the extra ring-offset ring
+     on top just looks like an ugly box. Buttons, links, etc. still get the ring. */
+  :focus-visible:not(input):not(textarea):not(select):not([contenteditable]) {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
-.seg button.active { background: var(--brand); color: #fff; font-weight: 600; }
 
-.toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; }
+/* base-ui renders focus guards inline; without this they add ~1px each to their
+   parent's flow (e.g. shifting the sidebar footer when the account menu opens).
+   Take them out of layout — they're clipped/invisible, focus still works. */
+[data-base-ui-focus-guard] {
+  position: absolute !important;
+}
 
-/* Waterfall */
-.waterfall { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.bar-row { display: grid; grid-template-columns: 130px 1fr 90px; align-items: center; gap: 12px; }
-.bar-track { background: #eee; border-radius: 6px; height: 26px; position: relative; overflow: hidden; }
-.bar-fill { height: 100%; display: flex; align-items: center; padding-left: 8px; color: #fff; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
-.bar-label { font-size: 0.82rem; font-weight: 600; }
-.bar-val { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
 
-.verdict { padding: 12px 14px; border-radius: 8px; font-size: 0.95rem; margin-top: 12px; }
-.verdict.healthy { background: #e8f7ee; color: var(--ok); border: 1px solid #bfe7cd; }
-.verdict.tight { background: #fdf6e3; color: var(--warn); border: 1px solid #eeddb0; }
-.verdict.unaffordable { background: #fdeaec; color: var(--bad); border: 1px solid #f2c3c9; }
-
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 8px; }
-.stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fff; }
-.stat .k { font-size: 0.72rem; color: var(--muted); }
-.stat .v { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-
-.err { color: var(--bad); font-size: 0.85rem; margin-top: 8px; }
-.source-note { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
-a { color: var(--brand); }
-
-/* How-to steps */
-.howto { background: var(--brand-weak); border: 1px solid #ddd8fb; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px; }
-.howto h2 { font-size: 0.95rem; margin: 0 0 10px; color: var(--brand); }
-.howto ol { margin: 0; padding-left: 20px; }
-.howto li { margin-bottom: 6px; font-size: 0.9rem; }
-.howto li:last-child { margin-bottom: 0; }
-
-/* Section headings inside cards */
-.section-title { font-size: 0.95rem; font-weight: 700; margin: 0 0 4px; }
-.section-sub { font-size: 0.82rem; color: var(--muted); margin: 0 0 14px; }
-
-/* Mode option descriptions */
-.seg-desc { font-size: 0.8rem; color: var(--muted); margin: 10px 0 0; }
-
-/* Advanced expander (native details) */
-details.adv { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 14px; }
-details.adv > summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--brand); list-style: none; }
-details.adv > summary::-webkit-details-marker { display: none; }
-details.adv > summary::before { content: "▸ "; }
-details.adv[open] > summary::before { content: "▾ "; }
-details.adv .adv-note { font-size: 0.8rem; color: var(--muted); margin: 8px 0 14px; }
-
-/* Result explainer + waterfall legend */
-.explainer { font-size: 0.92rem; margin: 0 0 14px; }
-.legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 4px 0 14px; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
-.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-
-/* Definitions */
-.defs { margin: 0; }
-.defs dt { font-weight: 700; font-size: 0.85rem; margin-top: 10px; }
-.defs dd { margin: 2px 0 0; font-size: 0.85rem; color: var(--muted); }
+/* iOS Safari auto-zooms (and then introduces a horizontal scroll) when you focus any
+   input whose font-size is < 16px. Force >=16px on mobile viewports so tapping any field
+   never zooms the page. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

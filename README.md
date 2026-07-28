@@ -1,57 +1,99 @@
-# CPG Retail Margin Calculator — Free tool (Agentworks)
+# CPG Retail Price & Margin Calculator
 
-A **channel-aware CPG cost-to-shelf margin calculator** — not a generic margin box.
-It models the real multi-layer chain (`COGS → wholesale → distributor markup →
-retailer margin → shelf price`) and pre-fills **real by-channel presets** derived from
-the Startup CPG Retail Tracker (219 chains).
+Work out what a product needs to sell for on the shelf — and what it costs to get
+there — using real reported figures from **219 US retail chains**.
 
-> Standalone **local-dev** service for now. Pushes only to
+Pick your actual retailer (Sprouts, Fresh Thyme, Earth Fare…) and the calculator
+fills in that chain's own reported margins, distributor markup, store count and
+slotting terms. When a chain hasn't reported something, it falls back to the
+channel average **and says so, every time**.
+
+> Standalone **local-dev** service. Pushes only to
 > `github.com/vanditsharma10-agentworks/Free-tool---Margin-Calculator-CPG`.
-> Eventually merges into the main Agentworks site (`v2.1-dev`) — **not yet**.
+> Eventually merges into the main Agentworks site — **not yet**.
 
-This repo currently contains **work #2: the calculator engine**. Work #1 (page
-copy + design-system styling from the design repo) is separate and not done here.
+## ⚠️ Before this ever ships publicly
 
-## Stack
-- **Next.js** (App Router, TypeScript) — single page
-- **Postgres** (Docker) — holds the preset/reference dataset, served via `/api/presets`
-- The calculator **math runs client-side** (`lib/calc.ts`); the DB only supplies presets
+`db/03_retailers.sql` holds **named per-chain economics**. It is deliberately in
+its own file so it is trivially separable. Publishing named retailers with their
+margins and slotting fees is a republication question that must be settled first
+(see ADR 0007 in the SEO repo). Local use is fine.
+
+All figures are **community estimates** — reported by brands, not confirmed by
+the retailers or distributors named. The UI states this.
 
 ## Run it
 
-Everything in Docker (Postgres auto-seeds on first boot):
 ```bash
-docker compose up
-# → http://localhost:3100   (host 3100 avoids clashing with the main site on 3000)
+docker compose up          # Postgres + Next.js  → http://localhost:3100
 ```
 
-Just the DB in Docker, Next.js on the host:
+DB in Docker, app on the host:
+
 ```bash
 docker compose up db
-cp .env.example .env   # already present
-npm install
-npm run dev            # → http://localhost:3000 (or the next free port)
+npm install && npm run dev # → http://localhost:3000
 ```
 
-## Test the engine
+## Correctness
+
+Three independent layers, all of which must pass:
+
 ```bash
-npm test
+npm test                                   # 67 unit + integration tests
+SHEET="/path/to/sheet.xlsx" npm run verify:sheet   # DB matches the sheet, field by field
+npx tsc --noEmit                           # types
 ```
 
-## What's where
+- **`scripts/verify_against_sheet.py`** re-reads the spreadsheet from scratch and
+  diffs every chain's channel, store count, margin band, markup band and raw
+  slotting text against the database. Exits non-zero on any mismatch.
+- **`lib/sheet-integration.test.ts`** asserts the arithmetic against expectations
+  worked out **by hand** from the sheet, so neither the data nor the maths can
+  drift silently.
+- Money is rounded half-up with a relative epsilon (plain `Math.round(n*100)`
+  turns 3.225 into 3.22), intermediates stay at full precision, and waterfall
+  segments are derived from rounded endpoints so they always sum to the shelf price.
+
+## The slotting model
+
+Real arrangements combine mechanisms, so entry cost is **additive** across three
+independent components:
+
+| Component | Cost |
+|---|---|
+| Free fill | `units/store × COGS × stores × SKUs` — product, not cash |
+| Per-store fee | `$/store × stores × SKUs` |
+| Lump sum | `$/SKU × SKUs` (does *not* scale with stores) |
+
+**The one distinction that matters:** `"free fill, $60/SKU/store"` (comma) means
+both apply and they're summed. `"free fill - $9k"` (dash), or any term that varies
+by channel/distributor/category, means they're **competing alternatives** — shown
+as a range, never added. Summing those would invent a cost nobody charges.
+
+Percentage-of-invoice deals (e.g. `4.8% PPF OI`) are their own mechanic and are
+never mistaken for free fill.
+
+## Layout
+
 | Path | What |
 |---|---|
-| `lib/calc.ts` | Pure engine: margin↔markup, forward/reverse waterfall, true-margin |
-| `lib/calc.test.ts` | Unit + edge-case tests (regression assertions) |
-| `lib/presets.ts` | Preset types + hardcoded fallback (used if DB is down) |
-| `db/01_schema.sql`, `db/02_seed.sql` | Reference schema + tracker-derived seed |
-| `app/api/presets/route.ts` | Serves presets from Postgres (fallback on failure) |
-| `app/page.tsx`, `components/` | Single-page UI (functional styling; design polish = work #1) |
+| `lib/calc.ts` | Price waterfall: margin↔markup, forward, reverse |
+| `lib/entry.ts` | Shelf-entry cost model (free fill / per-store / lump / %) |
+| `lib/resolve.ts` | Provenance — exact vs averaged — and peer lookup |
+| `scripts/extract_sheet.py` | Parses the sheet → `db/02_channels.sql`, `db/03_retailers.sql` |
+| `scripts/verify_against_sheet.py` | Independent DB-vs-sheet cross-check |
+| `components/` | UI, built on the Agentworks design language |
 
-## Preset data
-Derived live from the tracker's Store List on 2026-07-28. Medians per channel:
-Conventional 17.5/27.5 · Natural 12.5/37.5 · C-Store 20/42.5 · Club (direct) —/12.5 ·
-E-Commerce 12.5/32.5 · Drug 17.5/47.5 (distributor markup / retailer margin %).
-**Re-seed each quarterly tracker update** (`docker compose down -v && docker compose up`).
-We store only the band structure + typical ranges and **attribute Startup CPG** — never
-their per-retailer table.
+Regenerate the seed data after a sheet update:
+
+```bash
+SHEET="/path/to/sheet.xlsx" npm run extract && docker compose down -v && docker compose up
+```
+
+## Design
+
+Uses the Agentworks design language (Base UI + Tailwind 4 tokens, Montserrat /
+IBM Plex Mono, `moss` = brand indigo `#5e50ee`). Light and dark are both
+first-class. Components in `components/ui` are ported from
+`dabbygabby/agentworks-design-language` — don't hand-roll replacements.

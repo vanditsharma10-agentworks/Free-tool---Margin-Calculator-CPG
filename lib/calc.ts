@@ -68,8 +68,19 @@ export interface TrueMarginResult {
 
 const EPS = 1e-9;
 
+/**
+ * Round to cents, half-up, immune to binary-float representation error.
+ *
+ * Naive `Math.round(n * 100) / 100` gets this wrong: 3.00 * 1.075 is exactly
+ * 3.225 in decimal, but the nearest double is 3.2249999999999996, which rounds
+ * DOWN to 3.22 instead of up to 3.23. A relative epsilon nudges values that are
+ * a hair under a half-cent boundary back onto it, while leaving genuinely
+ * smaller values (3.2249) alone.
+ */
 function round2(n: number): number {
-  return Math.round((n + Number.EPSILON) * 100) / 100;
+  if (!Number.isFinite(n)) return n;
+  const eps = Math.abs(n) * 1e-12 + 1e-12;
+  return (Math.sign(n) * Math.round((Math.abs(n) + eps) * 100)) / 100;
 }
 
 function roundPct(n: number): number {
@@ -125,38 +136,52 @@ export function forwardWaterfall(input: ForwardInput): WaterfallResult {
   const { cogs, preset } = input;
   if (cogs < 0) throw new Error("COGS cannot be negative.");
 
+  // NOTE: every intermediate below stays at FULL precision. Rounding a step and
+  // feeding it into the next compounds the error down the chain (a rounded
+  // distributor price shifts the shelf price by more than a cent), so rounding
+  // happens once, on the way out.
   let wholesale: number;
   let manufacturerMarginPct: number;
 
   if (input.wholesale != null) {
     wholesale = input.wholesale;
     if (wholesale <= EPS) throw new Error("Wholesale price must be greater than zero.");
-    manufacturerMarginPct = marginFromPrice(cogs, wholesale);
+    manufacturerMarginPct = ((wholesale - cogs) / wholesale) * 100;
   } else if (input.manufacturerMarginPct != null) {
     manufacturerMarginPct = input.manufacturerMarginPct;
-    wholesale = priceFromMargin(cogs, manufacturerMarginPct);
+    if (manufacturerMarginPct >= 100) throw new Error("Margin must be below 100%.");
+    if (cogs < 0) throw new Error("Cost cannot be negative.");
+    wholesale = cogs / (1 - manufacturerMarginPct / 100);
   } else {
     throw new Error("Provide either a target margin or a wholesale price.");
   }
 
   const distMarkupPct = preset.hasDistributor ? preset.distributorMarkupPct : 0;
-  const distributorSell = round2(wholesale * (1 + distMarkupPct / 100));
+  const distributorSell = wholesale * (1 + distMarkupPct / 100);
 
   const retailerMarginPct = preset.retailerMarginPct;
   if (retailerMarginPct >= 100) throw new Error("Retailer margin must be below 100%.");
-  const shelf = round2(distributorSell / (1 - retailerMarginPct / 100));
+  const shelf = distributorSell / (1 - retailerMarginPct / 100);
+
+  // Each tier's cut is derived from the ROUNDED endpoints, so the four segments
+  // always sum exactly to the shelf price. The waterfall draws them as shares of
+  // that total — if they didn't sum, the bar would show a gap or overflow.
+  const cogsR = round2(cogs);
+  const wholesaleR = round2(wholesale);
+  const distributorSellR = round2(distributorSell);
+  const shelfR = round2(shelf);
 
   return {
-    cogs: round2(cogs),
-    wholesale: round2(wholesale),
-    distributorSell,
-    shelf,
+    cogs: cogsR,
+    wholesale: wholesaleR,
+    distributorSell: distributorSellR,
+    shelf: shelfR,
     manufacturerMarginPct: roundPct(manufacturerMarginPct),
     distributorMarkupPct: distMarkupPct,
     retailerMarginPct,
-    manufacturerProfit: round2(wholesale - cogs),
-    distributorCut: round2(distributorSell - wholesale),
-    retailerCut: round2(shelf - distributorSell),
+    manufacturerProfit: round2(wholesaleR - cogsR),
+    distributorCut: round2(distributorSellR - wholesaleR),
+    retailerCut: round2(shelfR - distributorSellR),
   };
 }
 
@@ -184,14 +209,15 @@ export function reverseWaterfall(input: ReverseInput): ReverseResult {
   if (shelf <= EPS) throw new Error("Shelf price must be greater than zero.");
   if (cogs < 0) throw new Error("COGS cannot be negative.");
 
+  // Full precision throughout; rounded once on the way out (see forwardWaterfall).
   const retailerMarginPct = preset.retailerMarginPct;
   if (retailerMarginPct >= 100) throw new Error("Retailer margin must be below 100%.");
-  const distributorSell = round2(shelf * (1 - retailerMarginPct / 100)); // retailer cost
+  const distributorSell = shelf * (1 - retailerMarginPct / 100); // = the retailer's cost
 
   const distMarkupPct = preset.hasDistributor ? preset.distributorMarkupPct : 0;
-  const wholesale = round2(distributorSell / (1 + distMarkupPct / 100));
+  const wholesale = distributorSell / (1 + distMarkupPct / 100);
 
-  const manufacturerProfit = round2(wholesale - cogs);
+  const manufacturerProfit = wholesale - cogs;
   const manufacturerMarginPct =
     wholesale > EPS ? roundPct((manufacturerProfit / wholesale) * 100) : -Infinity;
 
@@ -216,17 +242,24 @@ export function reverseWaterfall(input: ReverseInput): ReverseResult {
       `wholesale margin at your $${cogs.toFixed(2)} cost — this channel works.`;
   }
 
+  // Same invariant as forwardWaterfall: cuts derived from rounded endpoints so
+  // the segments sum exactly to the shelf price.
+  const cogsR = round2(cogs);
+  const wholesaleR = round2(wholesale);
+  const distributorSellR = round2(distributorSell);
+  const shelfR = round2(shelf);
+
   return {
-    cogs: round2(cogs),
-    wholesale,
-    distributorSell,
-    shelf: round2(shelf),
+    cogs: cogsR,
+    wholesale: wholesaleR,
+    distributorSell: distributorSellR,
+    shelf: shelfR,
     manufacturerMarginPct,
     distributorMarkupPct: distMarkupPct,
     retailerMarginPct,
-    manufacturerProfit,
-    distributorCut: round2(distributorSell - wholesale),
-    retailerCut: round2(shelf - distributorSell),
+    manufacturerProfit: round2(wholesaleR - cogsR),
+    distributorCut: round2(distributorSellR - wholesaleR),
+    retailerCut: round2(shelfR - distributorSellR),
     verdict,
     message,
   };

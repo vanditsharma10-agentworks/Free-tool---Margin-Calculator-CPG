@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
+import { montserrat, plexMono } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CPG Retail Margin Calculator — Agentworks",
+  title: "Retail Price & Margin Calculator — Agentworks",
   description:
-    "Channel-aware CPG cost-to-shelf margin calculator: COGS to shelf price across distributor and retailer, with real by-channel presets.",
+    "Work out what your product needs to sell for on the shelf, and what it costs to get there — with real figures from 219 US retail chains.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning className={`${montserrat.variable} ${plexMono.variable}`}>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
