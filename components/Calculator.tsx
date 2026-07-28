@@ -52,6 +52,7 @@ export default function Calculator() {
         setPresets(p);
         setTrade(p.tradeDefaults);
         applyChannel(p.channels, channelSlug);
+        applyDistributor(p.distributors, distSlug);
       })
       .catch(() => void 0);
     return () => {
@@ -60,12 +61,20 @@ export default function Calculator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Store type owns ONLY the retailer margin. The delivery route owns the
+  // distributor layer. Keeping them separate means the two controls can never
+  // contradict each other.
   function applyChannel(channels: ChannelPreset[], slug: string) {
     const c = channels.find((x) => x.slug === slug);
     if (!c) return;
     setRetailerMargin(c.retailerMarginPct);
-    setHasDistributor(c.hasDistributor);
-    if (c.distributorMarkupPct != null) setDistMarkup(c.distributorMarkupPct);
+  }
+
+  function applyDistributor(dists: { slug: string; hasDistributor: boolean; distributorMarkupPct: number | null }[], slug: string) {
+    const d = dists.find((x) => x.slug === slug);
+    if (!d) return;
+    setHasDistributor(d.hasDistributor);
+    setDistMarkup(d.distributorMarkupPct ?? 0);
   }
 
   function onChannelChange(slug: string) {
@@ -75,10 +84,7 @@ export default function Calculator() {
 
   function onDistChange(slug: string) {
     setDistSlug(slug);
-    const d = presets.distributors.find((x) => x.slug === slug);
-    if (!d) return;
-    setHasDistributor(d.hasDistributor);
-    if (d.distributorMarkupPct != null) setDistMarkup(d.distributorMarkupPct);
+    applyDistributor(presets.distributors, slug);
   }
 
   const preset: WaterfallPreset = {
@@ -193,6 +199,11 @@ export default function Calculator() {
                 </option>
               ))}
             </select>
+            <p className="hint" style={{ marginTop: 4 }}>
+              {hasDistributor
+                ? "A distributor sits between you and the store and takes a markup."
+                : "You sell straight to the store — no distributor in the chain."}
+            </p>
           </div>
         </div>
 
@@ -202,19 +213,22 @@ export default function Calculator() {
             These are pre-filled with typical numbers. Adjust them if you know your real rates.
           </p>
           <div className="row">
-            <div className="field">
-              <label className="toggle">
-                <input type="checkbox" checked={hasDistributor} onChange={(e) => setHasDistributor(e.target.checked)} />
-                Goes through a distributor
-              </label>
-              <p className="hint" style={{ marginTop: 4 }}>Uncheck if you sell straight to the store.</p>
-            </div>
-            <div className="field">
-              <label>
-                Distributor markup (%) <span className="hint">what they add on top of your price</span>
-              </label>
-              <input type="number" step="0.5" min="0" value={distMarkup} disabled={!hasDistributor} onChange={(e) => setDistMarkup(+e.target.value)} />
-            </div>
+            {hasDistributor ? (
+              <div className="field">
+                <label>
+                  Distributor markup (%) <span className="hint">what they add on top of your price</span>
+                </label>
+                <input type="number" step="0.5" min="0" value={distMarkup} onChange={(e) => setDistMarkup(+e.target.value)} />
+              </div>
+            ) : (
+              <div className="field">
+                <label>Distributor markup</label>
+                <p className="hint" style={{ marginTop: 6 }}>
+                  Not applicable — you sell direct. To add a distributor, pick one under{" "}
+                  <em>&ldquo;How it reaches the store.&rdquo;</em>
+                </p>
+              </div>
+            )}
             <div className="field">
               <label>
                 Store margin (%) <span className="hint">the store&apos;s cut of the shelf price</span>

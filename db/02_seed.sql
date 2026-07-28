@@ -12,7 +12,7 @@ INSERT INTO channels (slug, name, has_distributor, distributor_markup_pct, retai
   ('conventional', 'Conventional Grocery', TRUE, 17.5, 27.5, 119, 'KeHE/UNFI duopoly; largest channel', 1),
   ('natural',      'Natural / Specialty',  TRUE, 12.5, 37.5, 60,  'Higher retailer margins; UNFI/KeHE', 2),
   ('c-store',      'C-Store',              TRUE, 20.0, 42.5, 10,  'DSD-heavy; high markups + margins', 3),
-  ('club',         'Club (direct)',        FALSE, NULL, 12.5, 10,  'Direct — no distributor layer; thin margin, high volume', 4),
+  ('club',         'Club / Warehouse',     FALSE, NULL, 12.5, 10,  'Thin margin, high volume', 4),
   ('e-commerce',   'E-Commerce',           TRUE, 12.5, 32.5, 6,   'Amazon/pure-play', 5),
   ('drug',         'Drug',                 TRUE, 17.5, 47.5, 3,   'Highest retailer margins; small sample', 6);
 
@@ -20,8 +20,8 @@ INSERT INTO channels (slug, name, has_distributor, distributor_markup_pct, retai
 INSERT INTO distributors (slug, name, has_distributor, distributor_markup_pct, sample_size, note, sort_order) VALUES
   ('kehe',   'KeHE',   TRUE, 12.5, 46, 'Largest primary distributor in the tracker', 1),
   ('unfi',   'UNFI',   TRUE, 12.5, 34, 'Other half of the duopoly', 2),
-  ('direct', 'Direct (no distributor)', FALSE, NULL, 22, 'Sell straight to the retailer', 3),
-  ('dsd',    'DSD (direct store delivery)', TRUE, 17.5, 8, 'Higher markup; C-store/beverage', 4);
+  ('direct', 'Direct — straight to the store (no distributor)', FALSE, NULL, 22, 'Sell straight to the retailer', 3),
+  ('dsd',    'DSD distributor (delivers to stores)', TRUE, 17.5, 8, 'Higher markup; C-store/beverage', 4);
 
 -- ── Trade-cost seed defaults (true-margin layer) ───────────────────────────
 INSERT INTO trade_defaults (key, label, amount, unit) VALUES
