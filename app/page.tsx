@@ -1,11 +1,35 @@
+import type { Metadata } from "next";
 import { TriangleAlertIcon } from "lucide-react";
 import { Calculator } from "@/components/Calculator";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Schema } from "@/components/Schema";
+import {
+  Hero, WhyMargin, Education, Faq, RelatedReading, AboutCta,
+} from "@/components/PageCopy";
+import { CANONICAL } from "@/lib/content";
 import { query } from "@/lib/db";
 import type { Retailer, Channel } from "@/lib/resolve";
 import type { SlottingType } from "@/lib/entry";
 
 export const dynamic = "force-dynamic";
+
+const TITLE = "Retail Margin & Markup Calculator for CPG | Agentworks";
+const DESC =
+  "Free retail margin & markup calculator for CPG brands. See your true margin after distributor, retailer & slotting — real data from 219 US chains.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESC,
+  alternates: { canonical: CANONICAL },
+  openGraph: {
+    title: TITLE,
+    description: DESC,
+    url: CANONICAL,
+    siteName: "Agentworks",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESC },
+};
 
 const num = (v: unknown): number | null =>
   v === null || v === undefined || v === "" ? null : Number(v);
@@ -88,21 +112,35 @@ export default async function Home() {
   }
 
   return (
-    <main className="mx-auto max-w-[1360px] px-4 pt-7 pb-16 sm:px-6">
-      <header className="mb-6 flex items-center justify-between gap-4 border-b pb-5">
-        <div className="min-w-0">
-          <h1 className="font-heading text-[26px] leading-tight font-semibold tracking-tight">
-            Retail Price &amp; Margin Calculator
-          </h1>
-          <p className="mt-1 text-[13px] text-muted-foreground">
-            What your product sells for on the shelf, and what it costs to get there —
-            using reported figures from {data.retailers.length} US retail chains.
-          </p>
-        </div>
-        <ThemeToggle />
-      </header>
+    <main id="main-content" className="mx-auto max-w-[1360px] px-4 pb-24 sm:px-6">
+      <Schema />
 
+      <div className="flex justify-end pt-5">
+        <ThemeToggle />
+      </div>
+
+      {/* Hero copy */}
+      <div className="pt-2 pb-8">
+        <Hero />
+      </div>
+
+      {/* The tool — a standalone block, not merged into the copy */}
       <Calculator data={data} />
+
+      {/* Wrap copy */}
+      <div className="mt-16 space-y-16">
+        <WhyMargin />
+        <Education />
+        <Faq />
+        <RelatedReading />
+        <AboutCta />
+      </div>
+
+      <footer className="mx-auto mt-16 max-w-2xl border-t pt-6 text-xs leading-relaxed text-muted-foreground">
+        Figures on this page are community estimates reported by brands across {data.retailers.length} US
+        retail chains — not confirmed by the retailers or distributors named. They&apos;re a starting point;
+        always confirm the real terms with your buyer. A free tool from Agentworks Scout.
+      </footer>
     </main>
   );
 }
