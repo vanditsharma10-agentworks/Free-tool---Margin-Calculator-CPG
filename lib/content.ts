@@ -88,9 +88,9 @@ export interface RelatedLink {
 export const RELATED_LINKS: RelatedLink[] = [
   {
     title: "Retail margins, slotting & pricing for CPG",
-    href: `${SITE}/guides/retail-margins-and-slotting`,
+    href: `${SITE}/blog/retail-margins-slotting-pricing-cpg`,
     blurb: "The full pillar — how every layer of the margin waterfall works.",
-    planned: true,
+    planned: false,
   },
   {
     title: "Distributors, brokers, KeHE & UNFI",
